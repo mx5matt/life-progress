@@ -1,0 +1,15 @@
+services:
+  life-progress:
+    build: .
+    image: life-progress:0.1.0
+    container_name: life-progress
+    restart: unless-stopped
+    ports:
+      - "192.168.28.16:8383:8080"
+    environment:
+      TZ: Pacific/Auckland
+      LIFE_PROGRESS_DB: /data/life-progress.db
+    volumes:
+      - ./data:/data
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Today · {{ stats.today.strftime('%d %B %Y') }}</p>
+  <h1>{{ profile.name }}'s Life Progress</h1>
+  <p>{{ stats.age }} years old. {{ "{:,.0f}".format(stats.lived_days) }} days experienced so far.</p>
+</section>
+
+<section class="stat-grid">
+  <article class="stat-card accent">
+    <span>Life progress</span>
+    <strong>{{ "%.1f"|format(stats.life_percent) }}%</strong>
+    <div class="progress"><i style="width:{{ stats.life_percent }}%"></i></div>
+  </article>
+  <article class="stat-card">
+    <span>Weeks lived</span>
+    <strong>{{ "{:,}".format(stats.lived_weeks) }}</strong>
+    <small>{{ "{:,}".format(stats.remaining_weeks) }} to the {{ profile.lifespan }}-year marker</small>
+  </article>
+  <article class="stat-card">
+    <span>Months lived</span>
+    <strong>{{ "{:,}".format(stats.lived_months) }}</strong>
+  </article>
+  <article class="stat-card">
+    <span>{{ stats.today.year }} progress</span>
+    <strong>{{ "%.1f"|format(stats.year_percent) }}%</strong>
+    <div class="progress year"><i style="width:{{ stats.year_percent }}%"></i></div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">The big picture</p>
+      <h2>Life in weeks</h2>
+    </div>
+    <div class="legend">
+      <span><i class="dot lived"></i>Lived</span>
+      <span><i class="dot current"></i>Now</span>
+      <span><i class="dot future"></i>Future</span>
+    </div>
+  </div>
+
+  <div class="weeks" aria-label="Life in weeks">
+    {% for week in range(stats.total_weeks) %}
+      <i
+        class="week {% if week < stats.completed_weeks %}lived{% elif week == stats.current_week %}current{% else %}future{% endif %}"
+        title="Week {{ week + 1 }}"
+      ></i>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="two-column">
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">People</p>
+      <h2>Important people</h2>
+    </div>
+  </div>
+
+  {% if people %}
+    <div class="item-list">
+    {% for person in people %}
+      <article class="item">
+        <div>
+          <strong>{{ person.name }}</strong>
+          <p>{{ person.relationship or 'Important person' }} · age {{ person.age }}</p>
+          {% if person.countdown %}
+            <p class="countdown">
+              {{ person.milestone_age }} in
+              <b>{{ person.countdown.years }}y</b>
+              <b>{{ person.countdown.months }}mo</b>
+              <b>{{ "{:,}".format(person.countdown.weeks) }}w</b>
+              <b>{{ "{:,}".format(person.countdown.days) }}d</b>
+            </p>
+          {% endif %}
+        </div>
+        <form method="post" action="{{ url_for('delete_person', person_id=person.id) }}">
+          <button class="quiet danger" type="submit">Remove</button>
+        </form>
+      </article>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">Nobody added yet.</p>
+  {% endif %}
+
+  <details>
+    <summary>Add a person</summary>
+    <form method="post" action="{{ url_for('add_person') }}" class="stack">
+      <input name="name" required placeholder="Name">
+      <input name="relationship" placeholder="Relationship, e.g. daughter">
+      <label>Date of birth<input type="date" name="birth_date" required></label>
+      <input type="number" name="milestone_age" min="1" max="150" placeholder="Milestone age, e.g. 18">
+      <button type="submit">Add person</button>
+    </form>
+  </details>
+</section>
+
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Looking ahead</p>
+      <h2>Milestones</h2>
+    </div>
+  </div>
+
+  {% if milestones %}
+    <div class="item-list">
+    {% for milestone in milestones %}
+      <article class="item milestone">
+        <div>
+          <strong>{{ milestone.title }}</strong>
+          <p>{{ milestone.target.strftime('%d %B %Y') }}</p>
+          {% if not milestone.countdown.past %}
+          <p class="countdown">
+            <b>{{ "{:,}".format(milestone.countdown.days) }} days</b>
+            <span>{{ "{:,}".format(milestone.countdown.weekends) }} Saturdays</span>
+            <span>{{ milestone.countdown.christmases }} Christmases</span>
+          </p>
+          {% else %}
+          <p class="muted">This milestone has passed.</p>
+          {% endif %}
+          {% if milestone.notes %}<p class="muted">{{ milestone.notes }}</p>{% endif %}
+        </div>
+        <form method="post" action="{{ url_for('delete_milestone', milestone_id=milestone.id) }}">
+          <button class="quiet danger" type="submit">Remove</button>
+        </form>
+      </article>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">No milestones yet.</p>
+  {% endif %}
+
+  <details>
+    <summary>Add a milestone</summary>
+    <form method="post" action="{{ url_for('add_milestone') }}" class="stack">
+      <input name="title" required placeholder="Milestone">
+      <label>Date<input type="date" name="target_date" required></label>
+      <input name="notes" placeholder="Optional note">
+      <button type="submit">Add milestone</button>
+    </form>
+  </details>
+</section>
+</div>
+
+{% endblock %}
