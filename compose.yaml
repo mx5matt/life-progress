@@ -1,11 +1,11 @@
 services:
   life-progress:
     build: .
-    image: life-progress:0.1.0
+    image: life-progress:0.1.1
     container_name: life-progress
     restart: unless-stopped
     ports:
-      - "192.168.28.16:8383:8080"
+      - "${LIFE_PROGRESS_BIND:-127.0.0.1}:8383:8080"
     environment:
       TZ: Pacific/Auckland
       LIFE_PROGRESS_DB: /data/life-progress.db

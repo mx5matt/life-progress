@@ -8,6 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "life-progress-local-v010")
 DB = os.environ.get("LIFE_PROGRESS_DB", "/data/life-progress.db")
+APP_VERSION = "0.1.1"
 
 
 @contextmanager
@@ -150,16 +151,48 @@ def profile_stats(profile):
     }
 
 
+
+@app.context_processor
+def inject_app_metadata():
+    return {"app_version": APP_VERSION}
+
+
 @app.before_request
 def ensure_db():
     init_db()
 
 
+
+@app.get("/changelog")
+def changelog():
+    changelog_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "CHANGELOG.md")
+    try:
+        with open(changelog_path, "r", encoding="utf-8") as handle:
+            content = handle.read()
+    except OSError:
+        content = "# Changelog\n\nChangelog is currently unavailable."
+
+    sections = []
+    current = None
+
+    for line in content.splitlines():
+        if line.startswith("## "):
+            current = {"title": line[3:].strip(), "groups": []}
+            sections.append(current)
+        elif line.startswith("### ") and current is not None:
+            current["groups"].append({"title": line[4:].strip(), "items": []})
+        elif line.startswith("- ") and current is not None:
+            if not current["groups"]:
+                current["groups"].append({"title": "Changes", "items": []})
+            current["groups"][-1]["items"].append(line[2:].strip())
+
+    return render_template("changelog.html", sections=sections)
+
 @app.get("/health")
 def health():
     with db() as conn:
         conn.execute("SELECT 1").fetchone()
-    return jsonify(status="ok", version="0.1.0")
+    return jsonify(status="ok", version=APP_VERSION)
 
 
 @app.route("/")

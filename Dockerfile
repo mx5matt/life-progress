@@ -13,6 +13,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY tests ./tests
+COPY CHANGELOG.md .
 
 RUN mkdir -p /data && chown -R lifeprogress:lifeprogress /app /data
 

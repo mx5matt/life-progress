@@ -34,7 +34,9 @@ Create the persistent data directory:
     mkdir -p data
     sudo chown 10001:10001 data
 
-Edit `compose.yaml` if the host IP or port needs changing.
+By default, Life Progress binds to `127.0.0.1` on port `8383`.
+
+To bind it to another interface, set `LIFE_PROGRESS_BIND` in the deployment environment. For example, use the appropriate address for your own host. Do not commit private deployment addresses to the repository.
 
 Start Life Progress:
 
@@ -42,7 +44,7 @@ Start Life Progress:
 
 Default deployment:
 
-    http://192.168.28.16:8383
+    http://127.0.0.1:8383
 
 ## Updating
 
